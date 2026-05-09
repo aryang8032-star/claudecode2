@@ -9,138 +9,46 @@
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   html, body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    background: #000;
-    overflow: hidden;
-    font-family: 'Rajdhani', sans-serif;
-    color: #FFD700;
+    margin: 0; padding: 0; width: 100%; height: 100%;
+    background: #000; overflow: hidden;
+    font-family: 'Rajdhani', sans-serif; color: #FFD700;
     user-select: none;
   }
-
-  #stage {
-    position: fixed;
-    inset: 0;
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-    background: #000;
-  }
-
-  #starfield {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 0;
-    pointer-events: none;
-  }
-
+  #stage { position: fixed; inset: 0; width: 100vw; height: 100vh; overflow: hidden; background: #000; }
+  #starfield { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
   #video {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transform: scaleX(-1);
-    z-index: 1;
-    opacity: 0.55;
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; transform: scaleX(-1); z-index: 1; opacity: 0.55;
   }
-
-  #fxCanvas {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 2;
-    pointer-events: none;
-  }
-
+  #fxCanvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; }
   #vignette {
-    position: absolute;
-    inset: 0;
-    z-index: 3;
-    pointer-events: none;
+    position: absolute; inset: 0; z-index: 3; pointer-events: none;
     background: radial-gradient(ellipse at center,
-      rgba(0,0,0,0) 50%,
-      rgba(0,0,0,0.55) 85%,
-      rgba(0,0,0,0.95) 100%);
+      rgba(0,0,0,0) 50%, rgba(0,0,0,0.55) 85%, rgba(0,0,0,0.95) 100%);
   }
-
   #hud {
-    position: absolute;
-    top: 24px;
-    left: 28px;
-    z-index: 4;
-    pointer-events: none;
-    text-transform: uppercase;
-    letter-spacing: 0.18em;
+    position: absolute; top: 24px; left: 28px; z-index: 4;
+    pointer-events: none; text-transform: uppercase; letter-spacing: 0.18em;
   }
-
-  #hud .title {
-    font-size: 12px;
-    font-weight: 400;
-    color: rgba(255, 215, 0, 0.55);
-    margin-bottom: 6px;
-  }
-
+  #hud .title { font-size: 12px; font-weight: 400; color: rgba(255, 215, 0, 0.55); margin-bottom: 6px; }
   #hud .gesture {
-    font-size: 26px;
-    font-weight: 600;
-    color: #FFD700;
-    text-shadow:
-      0 0 8px rgba(255, 140, 0, 0.85),
-      0 0 18px rgba(255, 140, 0, 0.55),
-      0 0 36px rgba(255, 140, 0, 0.35);
+    font-size: 26px; font-weight: 600; color: #FFD700;
+    text-shadow: 0 0 8px rgba(255, 140, 0, 0.85), 0 0 18px rgba(255, 140, 0, 0.55);
     transition: color 0.3s ease, text-shadow 0.3s ease;
   }
-
-  #hud .gesture.portal {
-    color: #FF8C00;
-  }
+  #hud .gesture.portal { color: #FF8C00; }
   #hud .gesture.shield {
     color: #7DF9FF;
-    text-shadow:
-      0 0 8px rgba(125, 249, 255, 0.85),
-      0 0 18px rgba(0, 191, 255, 0.55),
-      0 0 36px rgba(0, 191, 255, 0.35);
+    text-shadow: 0 0 8px rgba(125, 249, 255, 0.85), 0 0 18px rgba(0, 191, 255, 0.55);
   }
-  #hud .gesture.casting {
-    color: #FFD700;
-  }
-  #hud .gesture.idle {
-    color: rgba(255, 215, 0, 0.35);
-    text-shadow: none;
-  }
-
-  #hud .sub {
-    margin-top: 10px;
-    font-size: 11px;
-    font-weight: 300;
-    color: rgba(255, 215, 0, 0.45);
-  }
-
-  #hud .corner {
-    position: fixed;
-    top: 18px;
-    left: 18px;
-    width: 22px;
-    height: 22px;
-    border-top: 1px solid rgba(255, 140, 0, 0.6);
-    border-left: 1px solid rgba(255, 140, 0, 0.6);
-  }
+  #hud .gesture.casting { color: #FFD700; }
+  #hud .gesture.idle { color: rgba(255, 215, 0, 0.35); text-shadow: none; }
+  #hud .sub { margin-top: 10px; font-size: 11px; font-weight: 300; color: rgba(255, 215, 0, 0.45); }
 
   #permission {
-    position: absolute;
-    inset: 0;
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 28px;
+    position: absolute; inset: 0; z-index: 10;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 28px;
     background:
       radial-gradient(circle at 50% 40%, rgba(255,140,0,0.12), transparent 60%),
       radial-gradient(circle at 50% 60%, rgba(0,191,255,0.08), transparent 65%),
@@ -148,123 +56,68 @@
     text-align: center;
     transition: opacity 0.6s ease;
   }
-
-  #permission.hidden {
-    opacity: 0;
-    pointer-events: none;
-  }
-
+  #permission.hidden { opacity: 0; pointer-events: none; }
   #permission h1 {
-    font-size: 44px;
-    font-weight: 600;
-    letter-spacing: 0.22em;
-    margin: 0;
-    color: #FFD700;
-    text-shadow:
-      0 0 12px rgba(255, 140, 0, 0.85),
-      0 0 30px rgba(255, 140, 0, 0.55),
-      0 0 60px rgba(255, 140, 0, 0.35);
+    font-size: 44px; font-weight: 600; letter-spacing: 0.22em; margin: 0; color: #FFD700;
+    text-shadow: 0 0 12px rgba(255, 140, 0, 0.85), 0 0 30px rgba(255, 140, 0, 0.55);
   }
-
   #permission p {
-    max-width: 520px;
-    margin: 0 24px;
-    font-size: 16px;
-    font-weight: 300;
-    letter-spacing: 0.1em;
-    color: rgba(255, 215, 0, 0.7);
-    line-height: 1.7;
+    max-width: 520px; margin: 0 24px; font-size: 16px; font-weight: 300; letter-spacing: 0.1em;
+    color: rgba(255, 215, 0, 0.7); line-height: 1.7;
   }
-
   #allowBtn {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 18px;
-    font-weight: 600;
-    letter-spacing: 0.28em;
-    text-transform: uppercase;
-    color: #FFD700;
-    background: transparent;
-    border: 1px solid rgba(255, 140, 0, 0.7);
-    padding: 16px 38px;
-    cursor: pointer;
-    position: relative;
+    font-family: 'Rajdhani', sans-serif; font-size: 18px; font-weight: 600;
+    letter-spacing: 0.28em; text-transform: uppercase; color: #FFD700;
+    background: transparent; border: 1px solid rgba(255, 140, 0, 0.7);
+    padding: 16px 38px; cursor: pointer; position: relative;
     transition: all 0.25s ease;
-    box-shadow:
-      0 0 18px rgba(255, 140, 0, 0.35),
-      inset 0 0 18px rgba(255, 140, 0, 0.1);
+    box-shadow: 0 0 18px rgba(255, 140, 0, 0.35), inset 0 0 18px rgba(255, 140, 0, 0.1);
   }
-
   #allowBtn:hover {
-    color: #fff;
-    border-color: #FFD700;
-    box-shadow:
-      0 0 28px rgba(255, 140, 0, 0.7),
-      inset 0 0 28px rgba(255, 140, 0, 0.25);
+    color: #fff; border-color: #FFD700;
+    box-shadow: 0 0 28px rgba(255, 140, 0, 0.7), inset 0 0 28px rgba(255, 140, 0, 0.25);
     transform: translateY(-1px);
   }
-
   #allowBtn::before, #allowBtn::after {
-    content: '';
-    position: absolute;
-    width: 12px;
-    height: 12px;
-    border: 1px solid #FFD700;
+    content: ''; position: absolute; width: 12px; height: 12px; border: 1px solid #FFD700;
   }
   #allowBtn::before { top: -4px; left: -4px; border-right: none; border-bottom: none; }
   #allowBtn::after { bottom: -4px; right: -4px; border-left: none; border-top: none; }
 
   #status {
-    position: absolute;
-    bottom: 22px;
-    left: 28px;
-    z-index: 4;
-    font-size: 11px;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: rgba(255, 215, 0, 0.4);
-    pointer-events: none;
+    position: absolute; bottom: 22px; left: 28px; z-index: 4;
+    font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: rgba(255, 215, 0, 0.4); pointer-events: none;
+  }
+  #fps {
+    position: absolute; bottom: 22px; right: 28px; z-index: 4;
+    font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: rgba(255, 215, 0, 0.35); pointer-events: none;
   }
 
   .mystic-orb {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
+    width: 120px; height: 120px; border-radius: 50%;
     background: radial-gradient(circle at 50% 50%,
-      rgba(255, 215, 0, 0.5) 0%,
-      rgba(255, 140, 0, 0.3) 40%,
-      transparent 70%);
-    box-shadow:
-      0 0 40px rgba(255, 140, 0, 0.6),
-      0 0 80px rgba(255, 140, 0, 0.3),
-      inset 0 0 40px rgba(255, 215, 0, 0.4);
-    animation: pulse 3s ease-in-out infinite;
-    position: relative;
+      rgba(255, 215, 0, 0.5) 0%, rgba(255, 140, 0, 0.3) 40%, transparent 70%);
+    box-shadow: 0 0 40px rgba(255, 140, 0, 0.6), 0 0 80px rgba(255, 140, 0, 0.3),
+                inset 0 0 40px rgba(255, 215, 0, 0.4);
+    animation: pulse 3s ease-in-out infinite; position: relative;
   }
   .mystic-orb::after {
-    content: '';
-    position: absolute;
-    inset: -20px;
-    border: 1px solid rgba(255, 140, 0, 0.4);
-    border-radius: 50%;
+    content: ''; position: absolute; inset: -20px;
+    border: 1px solid rgba(255, 140, 0, 0.4); border-radius: 50%;
     animation: spin 8s linear infinite;
   }
   .mystic-orb::before {
-    content: '';
-    position: absolute;
-    inset: -40px;
-    border: 1px dashed rgba(255, 215, 0, 0.25);
-    border-radius: 50%;
+    content: ''; position: absolute; inset: -40px;
+    border: 1px dashed rgba(255, 215, 0, 0.25); border-radius: 50%;
     animation: spin 14s linear infinite reverse;
   }
-
   @keyframes pulse {
     0%, 100% { transform: scale(1); opacity: 1; }
     50% { transform: scale(1.06); opacity: 0.85; }
   }
-  @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
@@ -281,7 +134,8 @@
     <div class="sub" id="handCount">0 hands detected</div>
   </div>
 
-  <div id="status">Mystic Arts Engine v1.0 · Kamar-Taj</div>
+  <div id="status">Mystic Arts Engine v1.1 · Kamar-Taj</div>
+  <div id="fps"></div>
 
   <div id="permission">
     <div class="mystic-orb"></div>
@@ -293,67 +147,174 @@
   </div>
 </div>
 
-<!-- MediaPipe Hands via CDN -->
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 
 <script>
 'use strict';
 
-/* ========================================================================
-   Doctor Strange — Hand Effects
-   ======================================================================== */
+/* ====== Doctor Strange — Optimized Build ====== */
 
 const COLORS = {
-  goldOrange: '#FF8C00',
-  gold:       '#FFD700',
-  cyan:       '#00BFFF',
-  cyanLight:  '#7DF9FF',
+  goldOrange: '#FF8C00', gold: '#FFD700',
+  cyan: '#00BFFF',       cyanLight: '#7DF9FF',
 };
 
-const video = document.getElementById('video');
-const fxCanvas = document.getElementById('fxCanvas');
-const ctx = fxCanvas.getContext('2d');
-const starCanvas = document.getElementById('starfield');
-const starCtx = starCanvas.getContext('2d');
-const gestureLabel = document.getElementById('gestureLabel');
+const video       = document.getElementById('video');
+const fxCanvas    = document.getElementById('fxCanvas');
+const ctx         = fxCanvas.getContext('2d', { alpha: true, desynchronized: true });
+const starCanvas  = document.getElementById('starfield');
+const starCtx     = starCanvas.getContext('2d');
+const gestureLabel= document.getElementById('gestureLabel');
 const handCountEl = document.getElementById('handCount');
+const fpsEl       = document.getElementById('fps');
 const permissionScreen = document.getElementById('permission');
-const allowBtn = document.getElementById('allowBtn');
+const allowBtn    = document.getElementById('allowBtn');
 
-let W = window.innerWidth;
-let H = window.innerHeight;
+let DPR = Math.min(window.devicePixelRatio || 1, 1.25); // cap DPR for perf
+let W = 0, H = 0; // CSS pixel size
 
 function resize() {
-  W = window.innerWidth;
-  H = window.innerHeight;
-  fxCanvas.width = W;
-  fxCanvas.height = H;
-  starCanvas.width = W;
-  starCanvas.height = H;
-  drawStars();
+  const cssW = window.innerWidth;
+  const cssH = window.innerHeight;
+  W = cssW; H = cssH;
+  fxCanvas.width  = Math.floor(cssW * DPR);
+  fxCanvas.height = Math.floor(cssH * DPR);
+  fxCanvas.style.width  = cssW + 'px';
+  fxCanvas.style.height = cssH + 'px';
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+  starCanvas.width  = Math.floor(cssW * DPR);
+  starCanvas.height = Math.floor(cssH * DPR);
+  starCanvas.style.width  = cssW + 'px';
+  starCanvas.style.height = cssH + 'px';
+  starCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+  buildStarfield();
+  buildMandalaSprite();
 }
 window.addEventListener('resize', resize);
 
-/* -------------------- Star field (200 points) -------------------- */
-const STAR_COUNT = 200;
-const stars = [];
-function initStars() {
-  stars.length = 0;
-  for (let i = 0; i < STAR_COUNT; i++) {
-    stars.push({
-      x: Math.random() * W,
-      y: Math.random() * H,
-      r: Math.random() * 1.4 + 0.2,
-      a: Math.random() * 0.7 + 0.2,
-      tw: Math.random() * 0.02 + 0.005,
-      ph: Math.random() * Math.PI * 2,
-    });
-  }
+const MIRROR = (x) => W - x;
+
+/* ========== Pre-rendered sprite caches ========== */
+
+// Smoke sprite - one radial gradient drawn into offscreen canvas; reused per particle.
+function makeRadialSprite(size, stops) {
+  const c = document.createElement('canvas');
+  c.width = size; c.height = size;
+  const g = c.getContext('2d');
+  const grad = g.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
+  for (const [pos, col] of stops) grad.addColorStop(pos, col);
+  g.fillStyle = grad;
+  g.fillRect(0, 0, size, size);
+  return c;
 }
-function drawStars(t = 0) {
+
+const SMOKE_SPRITE = makeRadialSprite(96, [
+  [0, 'rgba(220,250,255,1)'],
+  [0.35, 'rgba(125,249,255,0.55)'],
+  [1, 'rgba(0,191,255,0)'],
+]);
+const SPARK_SPRITE_GOLD = makeRadialSprite(48, [
+  [0, 'rgba(255,255,210,1)'],
+  [0.3, 'rgba(255,215,0,0.85)'],
+  [1, 'rgba(255,140,0,0)'],
+]);
+const SPARK_SPRITE_ORANGE = makeRadialSprite(48, [
+  [0, 'rgba(255,230,170,1)'],
+  [0.3, 'rgba(255,140,0,0.85)'],
+  [1, 'rgba(255,80,0,0)'],
+]);
+
+// Mandala sprite - drawn once, then rotated per frame.
+let MANDALA_SPRITE = null;
+let MANDALA_BASE = 320;
+function buildMandalaSprite() {
+  const SIZE = MANDALA_BASE * 2;
+  const c = document.createElement('canvas');
+  c.width = SIZE; c.height = SIZE;
+  const g = c.getContext('2d');
+  g.translate(SIZE/2, SIZE/2);
+  g.globalCompositeOperation = 'lighter';
+
+  const r = MANDALA_BASE * 0.85;
+
+  g.lineCap = 'round'; g.lineJoin = 'round';
+  g.shadowBlur = 14;
+  g.shadowColor = COLORS.goldOrange;
+
+  // Outer ring
+  g.strokeStyle = COLORS.goldOrange;
+  g.lineWidth = 3;
+  g.beginPath(); g.arc(0, 0, r, 0, Math.PI * 2); g.stroke();
+  g.beginPath(); g.arc(0, 0, r * 0.7, 0, Math.PI * 2); g.stroke();
+  g.beginPath(); g.arc(0, 0, r * 0.35, 0, Math.PI * 2); g.stroke();
+
+  const SYM = 8;
+  for (let i = 0; i < SYM; i++) {
+    g.save();
+    g.rotate((i / SYM) * Math.PI * 2);
+
+    g.strokeStyle = COLORS.gold;
+    g.lineWidth = 1.5;
+    g.beginPath(); g.moveTo(0, 0); g.lineTo(r, 0); g.stroke();
+
+    g.beginPath();
+    g.arc(r * 0.55, 0, r * 0.22, Math.PI * 0.4, Math.PI * 1.6);
+    g.stroke();
+
+    g.beginPath();
+    g.moveTo(r * 0.85, 0);
+    g.lineTo(r * 0.95, r * 0.06);
+    g.lineTo(r * 0.95, -r * 0.06);
+    g.closePath();
+    g.stroke();
+
+    g.strokeStyle = COLORS.goldOrange;
+    g.beginPath();
+    g.moveTo(r, 0);
+    g.lineTo(r * 1.06, r * 0.05);
+    g.lineTo(r * 1.06, -r * 0.05);
+    g.closePath();
+    g.stroke();
+    g.restore();
+  }
+
+  // Octagon
+  g.strokeStyle = COLORS.gold;
+  g.lineWidth = 1.6;
+  g.beginPath();
+  for (let i = 0; i <= SYM; i++) {
+    const a = (i / SYM) * Math.PI * 2;
+    const px = Math.cos(a) * r * 0.7, py = Math.sin(a) * r * 0.7;
+    if (i === 0) g.moveTo(px, py); else g.lineTo(px, py);
+  }
+  g.stroke();
+
+  // Inner star
+  g.beginPath();
+  for (let i = 0; i < SYM; i++) {
+    const a = (i / SYM) * Math.PI * 2;
+    const a2 = ((i + 0.5) / SYM) * Math.PI * 2;
+    g.lineTo(Math.cos(a) * r * 0.35, Math.sin(a) * r * 0.35);
+    g.lineTo(Math.cos(a2) * r * 0.18, Math.sin(a2) * r * 0.18);
+  }
+  g.closePath(); g.stroke();
+
+  // Center glow
+  const grad = g.createRadialGradient(0,0,0, 0,0, r * 0.32);
+  grad.addColorStop(0, 'rgba(255,215,0,0.55)');
+  grad.addColorStop(1, 'rgba(255,140,0,0)');
+  g.fillStyle = grad; g.shadowBlur = 0;
+  g.beginPath(); g.arc(0,0, r*0.32, 0, Math.PI*2); g.fill();
+
+  MANDALA_SPRITE = c;
+}
+
+/* ========== Starfield (static) ========== */
+function buildStarfield() {
   starCtx.clearRect(0, 0, W, H);
-  // deep space gradient
   const g = starCtx.createRadialGradient(W * 0.5, H * 0.5, 50, W * 0.5, H * 0.5, Math.max(W, H) * 0.7);
   g.addColorStop(0, '#040611');
   g.addColorStop(0.6, '#01010a');
@@ -361,217 +322,73 @@ function drawStars(t = 0) {
   starCtx.fillStyle = g;
   starCtx.fillRect(0, 0, W, H);
 
-  for (const s of stars) {
-    const tw = 0.5 + 0.5 * Math.sin(t * 0.001 + s.ph);
-    starCtx.globalAlpha = s.a * tw;
-    starCtx.fillStyle = (Math.random() < 0.04) ? COLORS.cyanLight : '#fff';
-    starCtx.beginPath();
-    starCtx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-    starCtx.fill();
+  for (let i = 0; i < 200; i++) {
+    const x = Math.random() * W;
+    const y = Math.random() * H;
+    const r = Math.random() * 1.3 + 0.2;
+    const a = Math.random() * 0.7 + 0.25;
+    starCtx.globalAlpha = a;
+    starCtx.fillStyle = (Math.random() < 0.06) ? COLORS.cyanLight : '#fff';
+    starCtx.beginPath(); starCtx.arc(x, y, r, 0, Math.PI * 2); starCtx.fill();
   }
   starCtx.globalAlpha = 1;
 }
 
-/* -------------------- Particle Pool -------------------- */
+/* ========== Particle pool with free-list ========== */
 class Particle {
   constructor() { this.reset(); }
   reset() {
     this.active = false;
-    this.x = 0; this.y = 0;
-    this.vx = 0; this.vy = 0;
+    this.x = 0; this.y = 0; this.vx = 0; this.vy = 0;
     this.life = 0; this.maxLife = 1;
     this.size = 1; this.startSize = 1; this.endSize = 1;
-    this.color = '#fff';
-    this.type = 'spark';
-    this.gravity = 0;
-    this.wobble = 0; this.wobbleSeed = 0;
-    this.angle = 0;
-    this.tail = null;
+    this.color = '#fff'; this.type = 'spark';
+    this.gravity = 0; this.wobble = 0; this.wobbleSeed = 0;
+    this.angle = 0; this.cx = 0; this.cy = 0; this.spinSpeed = 0;
+    this.tx = 0; this.ty = 0; // tail
+    this.sprite = null;
   }
 }
-
 class ParticlePool {
   constructor(size = 2000) {
     this.size = size;
-    this.pool = [];
-    for (let i = 0; i < size; i++) this.pool.push(new Particle());
-    this.cursor = 0;
+    this.pool = new Array(size);
+    this.free = new Array(size);
+    for (let i = 0; i < size; i++) {
+      this.pool[i] = new Particle();
+      this.free[i] = i;
+    }
+    this.freeCount = size;
   }
   acquire() {
-    for (let i = 0; i < this.size; i++) {
-      const idx = (this.cursor + i) % this.size;
-      const p = this.pool[idx];
-      if (!p.active) {
-        p.reset();
-        p.active = true;
-        this.cursor = (idx + 1) % this.size;
-        return p;
-      }
-    }
-    // fallback - reuse oldest
-    const p = this.pool[this.cursor];
+    if (this.freeCount === 0) return null;
+    const idx = this.free[--this.freeCount];
+    const p = this.pool[idx];
     p.reset();
     p.active = true;
-    this.cursor = (this.cursor + 1) % this.size;
+    p._poolIdx = idx;
     return p;
   }
+  release(p) {
+    if (!p.active) return;
+    p.active = false;
+    this.free[this.freeCount++] = p._poolIdx;
+  }
 }
-
 const pool = new ParticlePool(2000);
 
-/* -------------------- Particle System (sparks/portal/fist) -------------------- */
-class ParticleSystem {
-  constructor() { this.particles = []; }
-
-  spawnFistExplosion(x, y) {
-    for (let i = 0; i < 50; i++) {
-      const p = pool.acquire();
-      const a = Math.random() * Math.PI * 2;
-      const sp = 5 + Math.random() * 9;
-      p.type = 'fist';
-      p.x = x; p.y = y;
-      p.vx = Math.cos(a) * sp;
-      p.vy = Math.sin(a) * sp - 2;
-      p.gravity = 0.3;
-      p.maxLife = 800;
-      p.life = 800;
-      p.size = 2 + Math.random() * 2;
-      p.color = Math.random() < 0.5 ? COLORS.gold : COLORS.goldOrange;
-      p.tail = { x: x, y: y };
-      this.particles.push(p);
-    }
-  }
-
-  spawnPortalRing(cx, cy, count = 80) {
-    const baseRadius = 70;
-    for (let i = 0; i < count; i++) {
-      const p = pool.acquire();
-      const a = (i / count) * Math.PI * 2;
-      p.type = 'portal';
-      p.x = cx + Math.cos(a) * baseRadius;
-      p.y = cy + Math.sin(a) * baseRadius;
-      p.angle = a;
-      p.vx = 0; p.vy = 0;
-      p.maxLife = 1200;
-      p.life = 1200;
-      p.size = 2.5 + Math.random() * 2;
-      p.color = Math.random() < 0.5 ? COLORS.gold : COLORS.goldOrange;
-      p.wobbleSeed = Math.random() * Math.PI * 2;
-      p.wobble = baseRadius;
-      // store center via vx/vy hack: use custom fields
-      p.cx = cx; p.cy = cy;
-      p.spinSpeed = 0.06 + Math.random() * 0.04;
-      this.particles.push(p);
-    }
-  }
-
-  refreshPortalRing(cx, cy) {
-    // pull existing portal particles toward new center
-    for (const p of this.particles) {
-      if (p.type === 'portal' && p.life > 400) {
-        p.cx = cx; p.cy = cy;
-        p.life = Math.max(p.life, 1200);
-      }
-    }
-  }
-
-  fadePortalRing() {
-    for (const p of this.particles) {
-      if (p.type === 'portal' && p.life > 800) {
-        p.life = 800;
-      }
-    }
-  }
-
-  update(dt) {
-    for (let i = this.particles.length - 1; i >= 0; i--) {
-      const p = this.particles[i];
-      p.life -= dt;
-      if (p.life <= 0) {
-        p.active = false;
-        this.particles.splice(i, 1);
-        continue;
-      }
-      if (p.type === 'fist') {
-        p.tail.x = p.x; p.tail.y = p.y;
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vy += p.gravity;
-      } else if (p.type === 'portal') {
-        p.angle += p.spinSpeed * (dt / 16);
-        const r = p.wobble + Math.sin(performance.now() * 0.005 + p.wobbleSeed) * 6;
-        p.x = p.cx + Math.cos(p.angle) * r;
-        p.y = p.cy + Math.sin(p.angle) * r;
-      }
-    }
-  }
-
-  draw(ctx, mirror) {
-    ctx.save();
-    ctx.globalCompositeOperation = 'lighter';
-    for (const p of this.particles) {
-      const t = p.life / p.maxLife;
-      const alpha = Math.max(0, Math.min(1, t));
-      const px = mirror(p.x);
-
-      if (p.type === 'fist') {
-        // tail streak
-        ctx.strokeStyle = p.color;
-        ctx.globalAlpha = alpha * 0.7;
-        ctx.lineWidth = p.size;
-        ctx.lineCap = 'round';
-        ctx.shadowBlur = 14;
-        ctx.shadowColor = p.color;
-        ctx.beginPath();
-        const dx = p.x - p.tail.x;
-        const dy = p.y - p.tail.y;
-        const len = Math.min(15, Math.sqrt(dx*dx + dy*dy) * 3);
-        const ang = Math.atan2(dy, dx);
-        const tx = mirror(p.x - Math.cos(ang) * len);
-        const ty = p.y - Math.sin(ang) * len;
-        ctx.moveTo(tx, ty);
-        ctx.lineTo(px, p.y);
-        ctx.stroke();
-
-        // head
-        ctx.globalAlpha = alpha;
-        ctx.fillStyle = p.color;
-        ctx.beginPath();
-        ctx.arc(px, p.y, p.size * 1.5, 0, Math.PI * 2);
-        ctx.fill();
-      } else if (p.type === 'portal') {
-        ctx.globalAlpha = alpha;
-        ctx.shadowBlur = 18;
-        ctx.shadowColor = p.color;
-        ctx.fillStyle = p.color;
-        ctx.beginPath();
-        ctx.arc(px, p.y, p.size, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
-    ctx.restore();
-  }
-}
-
-/* -------------------- Trail System (index finger) -------------------- */
+/* ========== Trail System ========== */
 class TrailSystem {
-  constructor() {
-    this.trails = [[], []]; // up to 2 hands
-  }
+  constructor() { this.trails = [[], []]; }
 
   push(handIndex, x, y, time) {
     if (!this.trails[handIndex]) this.trails[handIndex] = [];
     const arr = this.trails[handIndex];
     const last = arr[arr.length - 1];
-    if (!last || (Math.hypot(last.x - x, last.y - y) > 1.5)) {
+    if (!last || (Math.hypot(last.x - x, last.y - y) > 2)) {
       arr.push({ x, y, t: time });
     }
-    // cap memory
-    if (arr.length > 200) arr.shift();
-  }
-
-  clearHand(handIndex) {
-    // let it fade naturally - do nothing
+    if (arr.length > 80) arr.shift();
   }
 
   update(now) {
@@ -580,76 +397,64 @@ class TrailSystem {
     }
   }
 
-  draw(ctx, mirror, fadeMul = 1) {
-    ctx.save();
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.shadowColor = COLORS.goldOrange;
+  draw(ctx, fadeMul = 1) {
     const now = performance.now();
+    ctx.save();
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.shadowColor = COLORS.goldOrange;
+    ctx.shadowBlur = 14;
+    ctx.strokeStyle = COLORS.gold;
 
     for (const arr of this.trails) {
-      if (arr.length < 2) continue;
-      // Draw multiple passes for glow
-      for (let pass = 0; pass < 3; pass++) {
-        const widthScale = [2.4, 1.4, 0.8][pass];
-        const blur = [22, 14, 6][pass];
-        const colorPass = pass === 2 ? '#fff5d8' : (pass === 1 ? COLORS.gold : COLORS.goldOrange);
-        ctx.shadowBlur = blur;
-        ctx.shadowColor = COLORS.goldOrange;
-        ctx.strokeStyle = colorPass;
+      const n = arr.length;
+      if (n < 2) continue;
 
-        for (let i = 1; i < arr.length; i++) {
-          const a = arr[i - 1];
-          const b = arr[i];
-          const ageA = (now - a.t) / 1000;
-          const alpha = Math.max(0, 1 - ageA) * fadeMul;
-          if (alpha <= 0) continue;
-          const segWidth = (3 + (1 - ageA) * 3) * widthScale;
-          ctx.globalAlpha = alpha * (pass === 2 ? 0.9 : 0.7);
-          ctx.lineWidth = segWidth;
+      // Single bezier path; vary alpha/width per segment via separate strokes (one path per segment)
+      for (let i = 1; i < n; i++) {
+        const a = arr[i - 1], b = arr[i];
+        const ageA = (now - a.t) / 1000;
+        const alpha = (1 - ageA) * fadeMul;
+        if (alpha <= 0) continue;
 
-          ctx.beginPath();
-          // bezier-smoothed: use quadratic to midpoint
-          const ax = mirror(a.x), ay = a.y;
-          const bx = mirror(b.x), by = b.y;
-          if (i > 1) {
-            const prev = arr[i - 2];
-            const px = mirror(prev.x), py = prev.y;
-            const cx = (px + ax) / 2, cy = (py + ay) / 2;
-            const ex = (ax + bx) / 2, ey = (ay + by) / 2;
-            ctx.moveTo(cx, cy);
-            ctx.quadraticCurveTo(ax, ay, ex, ey);
-          } else {
-            ctx.moveTo(ax, ay);
-            ctx.lineTo(bx, by);
-          }
-          ctx.stroke();
+        ctx.globalAlpha = alpha * 0.85;
+        ctx.lineWidth = 3 + (1 - ageA) * 3;
+
+        ctx.beginPath();
+        const ax = MIRROR(a.x), ay = a.y;
+        const bx = MIRROR(b.x), by = b.y;
+        if (i > 1) {
+          const prev = arr[i - 2];
+          const px = MIRROR(prev.x), py = prev.y;
+          const cx = (px + ax) / 2, cy = (py + ay) / 2;
+          const ex = (ax + bx) / 2, ey = (ay + by) / 2;
+          ctx.moveTo(cx, cy);
+          ctx.quadraticCurveTo(ax, ay, ex, ey);
+        } else {
+          ctx.moveTo(ax, ay); ctx.lineTo(bx, by);
         }
+        ctx.stroke();
       }
     }
     ctx.restore();
   }
 }
 
-/* -------------------- Smoke System -------------------- */
+/* ========== Smoke System (sprite-based) ========== */
 class SmokeSystem {
   constructor() { this.particles = []; }
 
-  emit(x, y, count = 18) {
+  emit(x, y, count) {
     for (let i = 0; i < count; i++) {
       const p = pool.acquire();
+      if (!p) return;
       p.type = 'smoke';
       p.x = x + (Math.random() - 0.5) * 16;
       p.y = y + (Math.random() - 0.5) * 16;
       p.vx = (Math.random() - 0.5) * 0.6;
       p.vy = -0.6 - Math.random() * 0.8;
-      p.maxLife = 1200;
-      p.life = 1200;
-      p.startSize = 8;
-      p.endSize = 40;
-      p.size = 8;
+      p.maxLife = 1200; p.life = 1200;
+      p.startSize = 8; p.endSize = 40; p.size = 8;
       p.wobbleSeed = Math.random() * Math.PI * 2;
-      p.color = Math.random() < 0.5 ? COLORS.cyanLight : '#FFFFFF';
       this.particles.push(p);
     }
   }
@@ -660,7 +465,7 @@ class SmokeSystem {
       const p = this.particles[i];
       p.life -= dt;
       if (p.life <= 0) {
-        p.active = false;
+        pool.release(p);
         this.particles.splice(i, 1);
         continue;
       }
@@ -672,229 +477,232 @@ class SmokeSystem {
     }
   }
 
-  draw(ctx, mirror, fadeMul = 1) {
+  draw(ctx, fadeMul = 1) {
     ctx.save();
     ctx.globalCompositeOperation = 'lighter';
     for (const p of this.particles) {
       const t = p.life / p.maxLife;
-      const alpha = Math.max(0, t * 0.45) * fadeMul;
-      const px = mirror(p.x);
-      const grad = ctx.createRadialGradient(px, p.y, 0, px, p.y, p.size);
-      grad.addColorStop(0, `rgba(220, 250, 255, ${alpha})`);
-      grad.addColorStop(0.4, `rgba(125, 249, 255, ${alpha * 0.6})`);
-      grad.addColorStop(1, 'rgba(0, 191, 255, 0)');
-      ctx.fillStyle = grad;
-      ctx.beginPath();
-      ctx.arc(px, p.y, p.size, 0, Math.PI * 2);
-      ctx.fill();
+      const alpha = Math.max(0, t * 0.4) * fadeMul;
+      if (alpha <= 0.01) continue;
+      ctx.globalAlpha = alpha;
+      const px = MIRROR(p.x);
+      const s = p.size * 2; // sprite is 96px - draw at 2x size
+      ctx.drawImage(SMOKE_SPRITE, px - s, p.y - s, s * 2, s * 2);
     }
     ctx.restore();
   }
 }
 
-/* -------------------- Mandala Shield -------------------- */
-class MandalaShield {
-  constructor() {
-    this.active = false;
-    this.opacity = 0;
-    this.x = 0; this.y = 0;
-    this.size = 180;
-    this.rotation = 0;
-    this.targetOpacity = 0;
-  }
+/* ========== Particle System (portal + fist) ========== */
+class ParticleSystem {
+  constructor() { this.particles = []; }
 
-  setTarget(active, x, y, size) {
-    this.active = active;
-    this.targetOpacity = active ? 1 : 0;
-    if (active) {
-      this.x = x; this.y = y; this.size = size;
+  spawnFistExplosion(x, y) {
+    for (let i = 0; i < 50; i++) {
+      const p = pool.acquire();
+      if (!p) return;
+      const a = Math.random() * Math.PI * 2;
+      const sp = 5 + Math.random() * 9;
+      p.type = 'fist';
+      p.x = x; p.y = y;
+      p.vx = Math.cos(a) * sp;
+      p.vy = Math.sin(a) * sp - 2;
+      p.gravity = 0.3;
+      p.maxLife = 800; p.life = 800;
+      p.size = 2.5 + Math.random() * 2;
+      p.sprite = Math.random() < 0.5 ? SPARK_SPRITE_GOLD : SPARK_SPRITE_ORANGE;
+      p.color = (p.sprite === SPARK_SPRITE_GOLD) ? COLORS.gold : COLORS.goldOrange;
+      p.tx = x; p.ty = y;
+      this.particles.push(p);
     }
   }
 
+  spawnPortalRing(cx, cy) {
+    const baseRadius = 70;
+    for (let i = 0; i < 80; i++) {
+      const p = pool.acquire();
+      if (!p) return;
+      const a = (i / 80) * Math.PI * 2;
+      p.type = 'portal';
+      p.x = cx + Math.cos(a) * baseRadius;
+      p.y = cy + Math.sin(a) * baseRadius;
+      p.angle = a;
+      p.maxLife = 1200; p.life = 1200;
+      p.size = 3 + Math.random() * 2;
+      p.sprite = Math.random() < 0.5 ? SPARK_SPRITE_GOLD : SPARK_SPRITE_ORANGE;
+      p.wobbleSeed = Math.random() * Math.PI * 2;
+      p.wobble = baseRadius;
+      p.cx = cx; p.cy = cy;
+      p.spinSpeed = 0.06 + Math.random() * 0.04;
+      this.particles.push(p);
+    }
+  }
+
+  refreshPortalRing(cx, cy) {
+    for (const p of this.particles) {
+      if (p.type === 'portal' && p.life > 400) {
+        p.cx = cx; p.cy = cy;
+        if (p.life < 1000) p.life = 1200;
+      }
+    }
+  }
+  fadePortalRing() {
+    for (const p of this.particles) {
+      if (p.type === 'portal' && p.life > 800) p.life = 800;
+    }
+  }
+
+  update(dt) {
+    const now = performance.now();
+    for (let i = this.particles.length - 1; i >= 0; i--) {
+      const p = this.particles[i];
+      p.life -= dt;
+      if (p.life <= 0) {
+        pool.release(p);
+        this.particles.splice(i, 1);
+        continue;
+      }
+      if (p.type === 'fist') {
+        p.tx = p.x; p.ty = p.y;
+        p.x += p.vx; p.y += p.vy;
+        p.vy += p.gravity;
+      } else if (p.type === 'portal') {
+        p.angle += p.spinSpeed * (dt / 16);
+        const r = p.wobble + Math.sin(now * 0.005 + p.wobbleSeed) * 6;
+        p.x = p.cx + Math.cos(p.angle) * r;
+        p.y = p.cy + Math.sin(p.angle) * r;
+      }
+    }
+  }
+
+  draw(ctx) {
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+
+    // Pass 1: fist tails (lines) without per-particle shadow
+    ctx.lineCap = 'round';
+    for (const p of this.particles) {
+      if (p.type !== 'fist') continue;
+      const t = p.life / p.maxLife;
+      const alpha = Math.max(0, t);
+      if (alpha <= 0.02) continue;
+      const dx = p.x - p.tx, dy = p.y - p.ty;
+      const len = Math.min(15, Math.hypot(dx, dy) * 3);
+      const ang = Math.atan2(dy, dx);
+      const tx = MIRROR(p.x - Math.cos(ang) * len);
+      const ty = p.y - Math.sin(ang) * len;
+      ctx.globalAlpha = alpha * 0.7;
+      ctx.strokeStyle = p.color;
+      ctx.lineWidth = p.size;
+      ctx.beginPath();
+      ctx.moveTo(tx, ty);
+      ctx.lineTo(MIRROR(p.x), p.y);
+      ctx.stroke();
+    }
+
+    // Pass 2: sprite glow heads (no shadow needed; sprite has glow built-in)
+    for (const p of this.particles) {
+      const t = p.life / p.maxLife;
+      const alpha = Math.max(0, t);
+      if (alpha <= 0.02) continue;
+      ctx.globalAlpha = alpha;
+      const px = MIRROR(p.x);
+      const s = p.size * 8;
+      ctx.drawImage(p.sprite, px - s/2, p.y - s/2, s, s);
+    }
+    ctx.restore();
+  }
+}
+
+/* ========== Mandala Shield (uses sprite) ========== */
+class MandalaShield {
+  constructor() {
+    this.active = false; this.opacity = 0; this.targetOpacity = 0;
+    this.x = 0; this.y = 0; this.size = 180; this.rotation = 0;
+  }
+  setTarget(active, x, y, size) {
+    this.active = active;
+    this.targetOpacity = active ? 1 : 0;
+    if (active) { this.x = x; this.y = y; this.size = size; }
+  }
   update(dt) {
     this.rotation += dt * 0.0004;
     const speed = dt / 220;
     this.opacity += (this.targetOpacity - this.opacity) * Math.min(1, speed);
   }
-
-  draw(ctx, mirror, fadeMul = 1) {
-    if (this.opacity < 0.02) return;
-    const cx = mirror(this.x);
-    const cy = this.y;
+  draw(ctx, fadeMul = 1) {
+    if (this.opacity < 0.02 || !MANDALA_SPRITE) return;
+    const cx = MIRROR(this.x), cy = this.y;
     const pulse = 0.85 + 0.15 * Math.sin(performance.now() * 0.004);
-    const baseAlpha = this.opacity * pulse * fadeMul;
-    const r = this.size;
+    const alpha = this.opacity * pulse * fadeMul;
+    if (alpha < 0.02) return;
 
+    const drawSize = this.size * 2;
     ctx.save();
     ctx.globalCompositeOperation = 'lighter';
+    ctx.globalAlpha = alpha;
     ctx.translate(cx, cy);
     ctx.rotate(this.rotation);
-
-    // Outer ring
-    ctx.strokeStyle = COLORS.goldOrange;
-    ctx.shadowBlur = 24;
-    ctx.shadowColor = COLORS.goldOrange;
-    ctx.globalAlpha = baseAlpha * 0.9;
-    ctx.lineWidth = 2.5;
-    ctx.beginPath();
-    ctx.arc(0, 0, r, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // Inner ring
-    ctx.beginPath();
-    ctx.arc(0, 0, r * 0.7, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // Inner ring 2
-    ctx.beginPath();
-    ctx.arc(0, 0, r * 0.35, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // 8-fold symmetry
-    const SYM = 8;
-    for (let i = 0; i < SYM; i++) {
-      ctx.save();
-      ctx.rotate((i / SYM) * Math.PI * 2);
-
-      // radial spoke
-      ctx.strokeStyle = COLORS.gold;
-      ctx.globalAlpha = baseAlpha * 0.85;
-      ctx.lineWidth = 1.2;
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.lineTo(r, 0);
-      ctx.stroke();
-
-      // petal arc
-      ctx.beginPath();
-      ctx.arc(r * 0.55, 0, r * 0.22, Math.PI * 0.4, Math.PI * 1.6);
-      ctx.stroke();
-
-      // small triangle motif
-      ctx.beginPath();
-      ctx.moveTo(r * 0.85, 0);
-      ctx.lineTo(r * 0.95, r * 0.06);
-      ctx.lineTo(r * 0.95, -r * 0.06);
-      ctx.closePath();
-      ctx.stroke();
-
-      // outer arrow tick
-      ctx.strokeStyle = COLORS.goldOrange;
-      ctx.beginPath();
-      const ang = Math.PI * 2 / (SYM * 2);
-      ctx.moveTo(r, 0);
-      ctx.lineTo(r * 1.08, Math.sin(ang) * r * 0.08);
-      ctx.lineTo(r * 1.08, -Math.sin(ang) * r * 0.08);
-      ctx.closePath();
-      ctx.stroke();
-
-      ctx.restore();
-    }
-
-    // Inscribed octagon
-    ctx.strokeStyle = COLORS.gold;
-    ctx.globalAlpha = baseAlpha * 0.7;
-    ctx.lineWidth = 1.4;
-    ctx.beginPath();
-    for (let i = 0; i <= SYM; i++) {
-      const a = (i / SYM) * Math.PI * 2;
-      const px = Math.cos(a) * r * 0.7;
-      const py = Math.sin(a) * r * 0.7;
-      if (i === 0) ctx.moveTo(px, py);
-      else ctx.lineTo(px, py);
-    }
-    ctx.stroke();
-
-    // inner star
-    ctx.beginPath();
-    for (let i = 0; i < SYM; i++) {
-      const a = (i / SYM) * Math.PI * 2;
-      const a2 = ((i + 0.5) / SYM) * Math.PI * 2;
-      ctx.lineTo(Math.cos(a) * r * 0.35, Math.sin(a) * r * 0.35);
-      ctx.lineTo(Math.cos(a2) * r * 0.18, Math.sin(a2) * r * 0.18);
-    }
-    ctx.closePath();
-    ctx.stroke();
-
-    // central glow
-    const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, r * 0.3);
-    grad.addColorStop(0, `rgba(255, 215, 0, ${baseAlpha * 0.45})`);
-    grad.addColorStop(1, 'rgba(255, 140, 0, 0)');
-    ctx.fillStyle = grad;
-    ctx.globalAlpha = 1;
-    ctx.beginPath();
-    ctx.arc(0, 0, r * 0.3, 0, Math.PI * 2);
-    ctx.fill();
-
+    ctx.drawImage(MANDALA_SPRITE, -drawSize/2, -drawSize/2, drawSize, drawSize);
     ctx.restore();
   }
 }
 
-/* -------------------- Hand Gesture Detection -------------------- */
-function isFingerExtended(landmarks, tip, pip, mcp, wrist) {
-  // Distance from wrist comparison: tip should be farther than pip
-  const dTip = Math.hypot(landmarks[tip].x - landmarks[wrist].x, landmarks[tip].y - landmarks[wrist].y);
-  const dPip = Math.hypot(landmarks[pip].x - landmarks[wrist].x, landmarks[pip].y - landmarks[wrist].y);
+/* ========== Gesture detection ========== */
+function isFingerExtended(lm, tip, pip, wrist) {
+  const dTip = Math.hypot(lm[tip].x - lm[wrist].x, lm[tip].y - lm[wrist].y);
+  const dPip = Math.hypot(lm[pip].x - lm[wrist].x, lm[pip].y - lm[wrist].y);
   return dTip > dPip * 1.05;
 }
-function isThumbExtended(landmarks, hand) {
-  // Thumb tip distance from index MCP relative to thumb IP
-  const tip = landmarks[4], ip = landmarks[3], indexMcp = landmarks[5];
+function isThumbExtended(lm) {
+  const tip = lm[4], ip = lm[3], indexMcp = lm[5];
   const dTip = Math.hypot(tip.x - indexMcp.x, tip.y - indexMcp.y);
-  const dIp = Math.hypot(ip.x - indexMcp.x, ip.y - indexMcp.y);
+  const dIp  = Math.hypot(ip.x  - indexMcp.x, ip.y  - indexMcp.y);
   return dTip > dIp * 1.1;
 }
-
-function detectHandPose(landmarks) {
-  // returns { open: bool, fist: bool }
-  const indexExt = isFingerExtended(landmarks, 8, 6, 5, 0);
-  const middleExt = isFingerExtended(landmarks, 12, 10, 9, 0);
-  const ringExt = isFingerExtended(landmarks, 16, 14, 13, 0);
-  const pinkyExt = isFingerExtended(landmarks, 20, 18, 17, 0);
-  const thumbExt = isThumbExtended(landmarks);
-  const extCount = [indexExt, middleExt, ringExt, pinkyExt].filter(Boolean).length;
-  const open = extCount >= 4 && thumbExt;
-  const fist = extCount === 0 && !thumbExt;
-  return { open, fist, extCount };
+function detectHandPose(lm) {
+  const i = isFingerExtended(lm, 8, 6, 0);
+  const m = isFingerExtended(lm, 12, 10, 0);
+  const r = isFingerExtended(lm, 16, 14, 0);
+  const k = isFingerExtended(lm, 20, 18, 0);
+  const th = isThumbExtended(lm);
+  const ext = [i,m,r,k].filter(Boolean).length;
+  return { open: ext >= 4 && th, fist: ext === 0 && !th, extCount: ext };
 }
-
-function palmCenter(landmarks, w, h) {
-  // average of wrist (0), index mcp (5), pinky mcp (17), middle mcp (9)
+function palmCenter(lm, w, h) {
   const idx = [0, 5, 9, 13, 17];
   let sx = 0, sy = 0;
-  for (const i of idx) { sx += landmarks[i].x; sy += landmarks[i].y; }
+  for (const i of idx) { sx += lm[i].x; sy += lm[i].y; }
   return { x: (sx / idx.length) * w, y: (sy / idx.length) * h };
 }
-
-function handSize(landmarks, w, h) {
-  // distance wrist to middle finger MCP
-  const a = landmarks[0], b = landmarks[9];
-  return Math.hypot((a.x - b.x) * w, (a.y - b.y) * h);
+function handSize(lm, w, h) {
+  return Math.hypot((lm[0].x - lm[9].x) * w, (lm[0].y - lm[9].y) * h);
 }
 
-/* -------------------- Systems -------------------- */
+/* ========== Systems ========== */
 const trailSystem = new TrailSystem();
 const smokeSystem = new SmokeSystem();
-const particles = new ParticleSystem();
-const mandalas = [new MandalaShield(), new MandalaShield()];
+const particles   = new ParticleSystem();
+const mandalas    = [new MandalaShield(), new MandalaShield()];
 
-let currentLandmarks = []; // [{landmarks, handedness}, ...]
+let currentLandmarks = [];
 let portalActive = false;
-let portalFadeStart = 0;
-let lastFistTriggerPerHand = [0, 0];
+let portalLostFrames = 0;
+let lastFistTrigger = [0, 0];
 let noHandFrames = 0;
 let lastFrame = performance.now();
 
-const MIRROR = (x) => W - x;
-
-/* -------------------- MediaPipe Setup -------------------- */
+/* ========== MediaPipe ========== */
 let hands = null;
 let camera = null;
+let processing = false;
+let lastProcessTime = 0;
+const PROCESS_INTERVAL_MS = 1000 / 30; // throttle MediaPipe to ~30fps
 
 async function startCamera() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
-      video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' },
+      video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user', frameRate: { ideal: 30 } },
       audio: false,
     });
     video.srcObject = stream;
@@ -908,7 +716,7 @@ async function startCamera() {
     });
     hands.setOptions({
       maxNumHands: 2,
-      modelComplexity: 1,
+      modelComplexity: 0,             // lighter model
       minDetectionConfidence: 0.6,
       minTrackingConfidence: 0.5,
     });
@@ -916,10 +724,16 @@ async function startCamera() {
 
     camera = new Camera(video, {
       onFrame: async () => {
-        if (hands) await hands.send({ image: video });
+        if (!hands || processing) return;
+        const now = performance.now();
+        if (now - lastProcessTime < PROCESS_INTERVAL_MS) return;
+        processing = true;
+        lastProcessTime = now;
+        try { await hands.send({ image: video }); }
+        finally { processing = false; }
       },
-      width: 1280,
-      height: 720,
+      width: 640,
+      height: 480,
     });
     camera.start();
 
@@ -935,38 +749,26 @@ function onHandResults(results) {
     currentLandmarks = [];
     return;
   }
+  // Reuse array references where possible
   currentLandmarks = results.multiHandLandmarks.map((lm, i) => ({
     landmarks: lm,
     handedness: results.multiHandedness ? results.multiHandedness[i].label : 'Right',
   }));
 }
 
-/* -------------------- Main Loop -------------------- */
+/* ========== Main loop ========== */
+let fpsAcc = 0, fpsFrames = 0, fpsLast = performance.now();
+
 function loop(now) {
   const dt = Math.min(64, now - lastFrame);
   lastFrame = now;
 
-  // starfield twinkle (cheap)
-  drawStars(now);
-
-  // clear fx canvas
   ctx.clearRect(0, 0, W, H);
 
-  // Track hands existence for fadeMul
-  if (currentLandmarks.length === 0) {
-    noHandFrames++;
-  } else {
-    noHandFrames = 0;
-  }
-  // fade multiplier ramps down over 300ms after 3 missing frames
+  if (currentLandmarks.length === 0) noHandFrames++; else noHandFrames = 0;
   let fadeMul = 1;
-  if (noHandFrames > 3) {
-    const fadeStart = noHandFrames - 3;
-    fadeMul = Math.max(0, 1 - (fadeStart * (dt / 300)));
-    fadeMul = Math.max(0, 1 - ((noHandFrames - 3) / 18));
-  }
+  if (noHandFrames > 3) fadeMul = Math.max(0, 1 - ((noHandFrames - 3) / 18));
 
-  // Process hands
   const indexTipsScreen = [];
   let activeGesture = 'IDLE';
   let portalDetectedThisFrame = false;
@@ -974,43 +776,35 @@ function loop(now) {
   if (currentLandmarks.length > 0) {
     for (let h = 0; h < currentLandmarks.length; h++) {
       const lm = currentLandmarks[h].landmarks;
-
-      // Convert to screen coords (note: mediapipe gives normalized 0..1 of input image which is the
-      // un-mirrored video frame. Our canvas is unmirrored too; mirroring is applied at draw time.)
       const indexTip = { x: lm[8].x * W, y: lm[8].y * H };
-      const wrist = { x: lm[0].x * W, y: lm[0].y * H };
-      const palm = palmCenter(lm, W, H);
-      const hSize = handSize(lm, W, H);
+      const wrist    = { x: lm[0].x * W, y: lm[0].y * H };
+      const palm     = palmCenter(lm, W, H);
+      const hSize    = handSize(lm, W, H);
 
       indexTipsScreen.push(indexTip);
 
-      // ---- Trail ----
       trailSystem.push(h, indexTip.x, indexTip.y, now);
 
-      // ---- Smoke (always emit small amount per hand) ----
-      smokeSystem.emit(wrist.x, wrist.y, 8);
-      smokeSystem.emit(palm.x, palm.y, 10);
+      // Throttled smoke emission - reduced counts to keep particle count manageable
+      smokeSystem.emit(wrist.x, wrist.y, 4);
+      smokeSystem.emit(palm.x,  palm.y,  5);
 
-      // ---- Pose detection ----
       const pose = detectHandPose(lm);
-
       if (pose.open) {
         mandalas[h].setTarget(true, palm.x, palm.y, Math.max(120, hSize * 1.4));
         if (activeGesture !== 'PORTAL FORMING') activeGesture = 'SHIELD RAISED';
       } else {
         mandalas[h].setTarget(false, palm.x, palm.y, hSize);
       }
-
       if (pose.fist) {
-        if (now - lastFistTriggerPerHand[h] > 600) {
+        if (now - lastFistTrigger[h] > 600) {
           particles.spawnFistExplosion(palm.x, palm.y);
-          lastFistTriggerPerHand[h] = now;
+          lastFistTrigger[h] = now;
         }
         if (activeGesture === 'IDLE') activeGesture = 'CASTING';
       }
     }
 
-    // ---- Portal (two index fingertips close) ----
     if (indexTipsScreen.length >= 2) {
       const a = indexTipsScreen[0], b = indexTipsScreen[1];
       const dist = Math.hypot(a.x - b.x, a.y - b.y);
@@ -1023,73 +817,66 @@ function loop(now) {
         } else {
           particles.refreshPortalRing(cx, cy);
         }
-        portalFadeStart = 0;
+        portalLostFrames = 0;
         activeGesture = 'PORTAL FORMING';
       }
     }
     if (portalActive && !portalDetectedThisFrame) {
-      if (!portalFadeStart) portalFadeStart = now;
-      if (now - portalFadeStart > 50) {
+      portalLostFrames++;
+      if (portalLostFrames > 4) {
         particles.fadePortalRing();
         portalActive = false;
       }
     }
   } else {
-    // no hands - clear mandalas
     for (const m of mandalas) m.setTarget(false, m.x, m.y, m.size);
-    if (portalActive) {
-      particles.fadePortalRing();
-      portalActive = false;
-    }
+    if (portalActive) { particles.fadePortalRing(); portalActive = false; }
   }
 
-  // Update systems
+  // Update
   trailSystem.update(now);
   smokeSystem.update(dt);
   particles.update(dt);
   for (const m of mandalas) m.update(dt);
 
-  // Draw layered: smoke (bottom), trail, mandalas, particles (top)
-  smokeSystem.draw(ctx, MIRROR, fadeMul);
-  trailSystem.draw(ctx, MIRROR, fadeMul);
-  for (const m of mandalas) m.draw(ctx, MIRROR, fadeMul);
-  particles.draw(ctx, MIRROR);
+  // Draw (z-order: smoke -> mandala -> trail -> sparks)
+  smokeSystem.draw(ctx, fadeMul);
+  for (const m of mandalas) m.draw(ctx, fadeMul);
+  trailSystem.draw(ctx, fadeMul);
+  particles.draw(ctx);
 
-  // HUD
   updateHUD(activeGesture, currentLandmarks.length);
+
+  // FPS counter (cheap)
+  fpsFrames++; fpsAcc += dt;
+  if (fpsAcc >= 500) {
+    const fps = Math.round((fpsFrames * 1000) / fpsAcc);
+    fpsEl.textContent = fps + ' FPS';
+    fpsAcc = 0; fpsFrames = 0;
+  }
 
   requestAnimationFrame(loop);
 }
 
+let lastGesture = '';
 function updateHUD(gesture, handCount) {
-  if (gestureLabel.textContent !== gesture) {
+  if (gesture !== lastGesture) {
     gestureLabel.textContent = gesture;
+    gestureLabel.classList.remove('idle', 'portal', 'shield', 'casting');
+    if (gesture === 'IDLE') gestureLabel.classList.add('idle');
+    else if (gesture === 'PORTAL FORMING') gestureLabel.classList.add('portal');
+    else if (gesture === 'SHIELD RAISED') gestureLabel.classList.add('shield');
+    else gestureLabel.classList.add('casting');
+    lastGesture = gesture;
   }
-  gestureLabel.classList.remove('idle', 'portal', 'shield', 'casting');
-  if (gesture === 'IDLE') gestureLabel.classList.add('idle');
-  else if (gesture === 'PORTAL FORMING') gestureLabel.classList.add('portal');
-  else if (gesture === 'SHIELD RAISED') gestureLabel.classList.add('shield');
-  else gestureLabel.classList.add('casting');
-  handCountEl.textContent = `${handCount} hand${handCount === 1 ? '' : 's'} detected`;
+  const txt = `${handCount} hand${handCount === 1 ? '' : 's'} detected`;
+  if (handCountEl.textContent !== txt) handCountEl.textContent = txt;
 }
 
-/* -------------------- Init -------------------- */
+/* ========== Init ========== */
 resize();
-initStars();
-drawStars();
 
-allowBtn.addEventListener('click', () => {
-  startCamera();
-});
-
-// keep starfield alive on the permission screen too
-function ambientLoop(t) {
-  if (permissionScreen && !permissionScreen.classList.contains('hidden')) {
-    drawStars(t);
-    requestAnimationFrame(ambientLoop);
-  }
-}
-requestAnimationFrame(ambientLoop);
+allowBtn.addEventListener('click', () => { startCamera(); });
 
 </script>
 </body>
