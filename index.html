@@ -681,7 +681,6 @@ function handSize(lm, w, h) {
 
 /* ========== Systems ========== */
 const trailSystem = new TrailSystem();
-const smokeSystem = new SmokeSystem();
 const particles   = new ParticleSystem();
 const mandalas    = [new MandalaShield(), new MandalaShield()];
 
@@ -785,10 +784,6 @@ function loop(now) {
 
       trailSystem.push(h, indexTip.x, indexTip.y, now);
 
-      // Throttled smoke emission - reduced counts to keep particle count manageable
-      smokeSystem.emit(wrist.x, wrist.y, 4);
-      smokeSystem.emit(palm.x,  palm.y,  5);
-
       const pose = detectHandPose(lm);
       if (pose.open) {
         mandalas[h].setTarget(true, palm.x, palm.y, Math.max(120, hSize * 1.4));
@@ -835,12 +830,10 @@ function loop(now) {
 
   // Update
   trailSystem.update(now);
-  smokeSystem.update(dt);
   particles.update(dt);
   for (const m of mandalas) m.update(dt);
 
-  // Draw (z-order: smoke -> mandala -> trail -> sparks)
-  smokeSystem.draw(ctx, fadeMul);
+  // Draw (z-order: mandala -> trail -> sparks)
   for (const m of mandalas) m.draw(ctx, fadeMul);
   trailSystem.draw(ctx, fadeMul);
   particles.draw(ctx);
