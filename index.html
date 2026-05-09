@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Doctor Strange — Hand Effects</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    overflow: hidden;
+    font-family: 'Rajdhani', sans-serif;
+    color: #FFD700;
+    user-select: none;
+  }
+
+  #stage {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: #000;
+  }
+
+  #starfield {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  #video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1);
+    z-index: 1;
+    opacity: 0.55;
+  }
+
+  #fxCanvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  #vignette {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+    background: radial-gradient(ellipse at center,
+      rgba(0,0,0,0) 50%,
+      rgba(0,0,0,0.55) 85%,
+      rgba(0,0,0,0.95) 100%);
+  }
+
+  #hud {
+    position: absolute;
+    top: 24px;
+    left: 28px;
+    z-index: 4;
+    pointer-events: none;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+  }
+
+  #hud .title {
+    font-size: 12px;
+    font-weight: 400;
+    color: rgba(255, 215, 0, 0.55);
+    margin-bottom: 6px;
+  }
+
+  #hud .gesture {
+    font-size: 26px;
+    font-weight: 600;
+    color: #FFD700;
+    text-shadow:
+      0 0 8px rgba(255, 140, 0, 0.85),
+      0 0 18px rgba(255, 140, 0, 0.55),
+      0 0 36px rgba(255, 140, 0, 0.35);
+    transition: color 0.3s ease, text-shadow 0.3s ease;
+  }
+
+  #hud .gesture.portal {
+    color: #FF8C00;
+  }
+  #hud .gesture.shield {
+    color: #7DF9FF;
+    text-shadow:
+      0 0 8px rgba(125, 249, 255, 0.85),
+      0 0 18px rgba(0, 191, 255, 0.55),
+      0 0 36px rgba(0, 191, 255, 0.35);
+  }
+  #hud .gesture.casting {
+    color: #FFD700;
+  }
+  #hud .gesture.idle {
+    color: rgba(255, 215, 0, 0.35);
+    text-shadow: none;
+  }
+
+  #hud .sub {
+    margin-top: 10px;
+    font-size: 11px;
+    font-weight: 300;
+    color: rgba(255, 215, 0, 0.45);
+  }
+
+  #hud .corner {
+    position: fixed;
+    top: 18px;
+    left: 18px;
+    width: 22px;
+    height: 22px;
+    border-top: 1px solid rgba(255, 140, 0, 0.6);
+    border-left: 1px solid rgba(255, 140, 0, 0.6);
+  }
+
+  #permission {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 28px;
+    background:
+      radial-gradient(circle at 50% 40%, rgba(255,140,0,0.12), transparent 60%),
+      radial-gradient(circle at 50% 60%, rgba(0,191,255,0.08), transparent 65%),
+      #000;
+    text-align: center;
+    transition: opacity 0.6s ease;
+  }
+
+  #permission.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  #permission h1 {
+    font-size: 44px;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    margin: 0;
+    color: #FFD700;
+    text-shadow:
+      0 0 12px rgba(255, 140, 0, 0.85),
+      0 0 30px rgba(255, 140, 0, 0.55),
+      0 0 60px rgba(255, 140, 0, 0.35);
+  }
+
+  #permission p {
+    max-width: 520px;
+    margin: 0 24px;
+    font-size: 16px;
+    font-weight: 300;
+    letter-spacing: 0.1em;
+    color: rgba(255, 215, 0, 0.7);
+    line-height: 1.7;
+  }
+
+  #allowBtn {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: #FFD700;
+    background: transparent;
+    border: 1px solid rgba(255, 140, 0, 0.7);
+    padding: 16px 38px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.25s ease;
+    box-shadow:
+      0 0 18px rgba(255, 140, 0, 0.35),
+      inset 0 0 18px rgba(255, 140, 0, 0.1);
+  }
+
+  #allowBtn:hover {
+    color: #fff;
+    border-color: #FFD700;
+    box-shadow:
+      0 0 28px rgba(255, 140, 0, 0.7),
+      inset 0 0 28px rgba(255, 140, 0, 0.25);
+    transform: translateY(-1px);
+  }
+
+  #allowBtn::before, #allowBtn::after {
+    content: '';
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 1px solid #FFD700;
+  }
+  #allowBtn::before { top: -4px; left: -4px; border-right: none; border-bottom: none; }
+  #allowBtn::after { bottom: -4px; right: -4px; border-left: none; border-top: none; }
+
+  #status {
+    position: absolute;
+    bottom: 22px;
+    left: 28px;
+    z-index: 4;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(255, 215, 0, 0.4);
+    pointer-events: none;
+  }
+
+  .mystic-orb {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 50%,
+      rgba(255, 215, 0, 0.5) 0%,
+      rgba(255, 140, 0, 0.3) 40%,
+      transparent 70%);
+    box-shadow:
+      0 0 40px rgba(255, 140, 0, 0.6),
+      0 0 80px rgba(255, 140, 0, 0.3),
+      inset 0 0 40px rgba(255, 215, 0, 0.4);
+    animation: pulse 3s ease-in-out infinite;
+    position: relative;
+  }
+  .mystic-orb::after {
+    content: '';
+    position: absolute;
+    inset: -20px;
+    border: 1px solid rgba(255, 140, 0, 0.4);
+    border-radius: 50%;
+    animation: spin 8s linear infinite;
+  }
+  .mystic-orb::before {
+    content: '';
+    position: absolute;
+    inset: -40px;
+    border: 1px dashed rgba(255, 215, 0, 0.25);
+    border-radius: 50%;
+    animation: spin 14s linear infinite reverse;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.06); opacity: 0.85; }
+  }
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <canvas id="starfield"></canvas>
+  <video id="video" playsinline autoplay muted></video>
+  <canvas id="fxCanvas"></canvas>
+  <div id="vignette"></div>
+
+  <div id="hud">
+    <div class="title">Sanctum Status</div>
+    <div class="gesture idle" id="gestureLabel">IDLE</div>
+    <div class="sub" id="handCount">0 hands detected</div>
+  </div>
+
+  <div id="status">Mystic Arts Engine v1.0 · Kamar-Taj</div>
+
+  <div id="permission">
+    <div class="mystic-orb"></div>
+    <h1>🔮 ALLOW CAMERA</h1>
+    <p>Grant access to your webcam to channel the mystic arts.
+       Doctor Strange's powers manifest through hand gestures —
+       portals, shields, and sparks of golden energy.</p>
+    <button id="allowBtn">Open the Eye</button>
+  </div>
+</div>
+
+<!-- MediaPipe Hands via CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+<script>
+'use strict';
+
+/* ========================================================================
+   Doctor Strange — Hand Effects
+   ======================================================================== */
+
+const COLORS = {
+  goldOrange: '#FF8C00',
+  gold:       '#FFD700',
+  cyan:       '#00BFFF',
+  cyanLight:  '#7DF9FF',
+};
+
+const video = document.getElementById('video');
+const fxCanvas = document.getElementById('fxCanvas');
+const ctx = fxCanvas.getContext('2d');
+const starCanvas = document.getElementById('starfield');
+const starCtx = starCanvas.getContext('2d');
+const gestureLabel = document.getElementById('gestureLabel');
+const handCountEl = document.getElementById('handCount');
+const permissionScreen = document.getElementById('permission');
+const allowBtn = document.getElementById('allowBtn');
+
+let W = window.innerWidth;
+let H = window.innerHeight;
+
+function resize() {
+  W = window.innerWidth;
+  H = window.innerHeight;
+  fxCanvas.width = W;
+  fxCanvas.height = H;
+  starCanvas.width = W;
+  starCanvas.height = H;
+  drawStars();
+}
+window.addEventListener('resize', resize);
+
+/* -------------------- Star field (200 points) -------------------- */
+const STAR_COUNT = 200;
+const stars = [];
+function initStars() {
+  stars.length = 0;
+  for (let i = 0; i < STAR_COUNT; i++) {
+    stars.push({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      r: Math.random() * 1.4 + 0.2,
+      a: Math.random() * 0.7 + 0.2,
+      tw: Math.random() * 0.02 + 0.005,
+      ph: Math.random() * Math.PI * 2,
+    });
+  }
+}
+function drawStars(t = 0) {
+  starCtx.clearRect(0, 0, W, H);
+  // deep space gradient
+  const g = starCtx.createRadialGradient(W * 0.5, H * 0.5, 50, W * 0.5, H * 0.5, Math.max(W, H) * 0.7);
+  g.addColorStop(0, '#040611');
+  g.addColorStop(0.6, '#01010a');
+  g.addColorStop(1, '#000');
+  starCtx.fillStyle = g;
+  starCtx.fillRect(0, 0, W, H);
+
+  for (const s of stars) {
+    const tw = 0.5 + 0.5 * Math.sin(t * 0.001 + s.ph);
+    starCtx.globalAlpha = s.a * tw;
+    starCtx.fillStyle = (Math.random() < 0.04) ? COLORS.cyanLight : '#fff';
+    starCtx.beginPath();
+    starCtx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    starCtx.fill();
+  }
+  starCtx.globalAlpha = 1;
+}
+
+/* -------------------- Particle Pool -------------------- */
+class Particle {
+  constructor() { this.reset(); }
+  reset() {
+    this.active = false;
+    this.x = 0; this.y = 0;
+    this.vx = 0; this.vy = 0;
+    this.life = 0; this.maxLife = 1;
+    this.size = 1; this.startSize = 1; this.endSize = 1;
+    this.color = '#fff';
+    this.type = 'spark';
+    this.gravity = 0;
+    this.wobble = 0; this.wobbleSeed = 0;
+    this.angle = 0;
+    this.tail = null;
+  }
+}
+
+class ParticlePool {
+  constructor(size = 2000) {
+    this.size = size;
+    this.pool = [];
+    for (let i = 0; i < size; i++) this.pool.push(new Particle());
+    this.cursor = 0;
+  }
+  acquire() {
+    for (let i = 0; i < this.size; i++) {
+      const idx = (this.cursor + i) % this.size;
+      const p = this.pool[idx];
+      if (!p.active) {
+        p.reset();
+        p.active = true;
+        this.cursor = (idx + 1) % this.size;
+        return p;
+      }
+    }
+    // fallback - reuse oldest
+    const p = this.pool[this.cursor];
+    p.reset();
+    p.active = true;
+    this.cursor = (this.cursor + 1) % this.size;
+    return p;
+  }
+}
+
+const pool = new ParticlePool(2000);
+
+/* -------------------- Particle System (sparks/portal/fist) -------------------- */
+class ParticleSystem {
+  constructor() { this.particles = []; }
+
+  spawnFistExplosion(x, y) {
+    for (let i = 0; i < 50; i++) {
+      const p = pool.acquire();
+      const a = Math.random() * Math.PI * 2;
+      const sp = 5 + Math.random() * 9;
+      p.type = 'fist';
+      p.x = x; p.y = y;
+      p.vx = Math.cos(a) * sp;
+      p.vy = Math.sin(a) * sp - 2;
+      p.gravity = 0.3;
+      p.maxLife = 800;
+      p.life = 800;
+      p.size = 2 + Math.random() * 2;
+      p.color = Math.random() < 0.5 ? COLORS.gold : COLORS.goldOrange;
+      p.tail = { x: x, y: y };
+      this.particles.push(p);
+    }
+  }
+
+  spawnPortalRing(cx, cy, count = 80) {
+    const baseRadius = 70;
+    for (let i = 0; i < count; i++) {
+      const p = pool.acquire();
+      const a = (i / count) * Math.PI * 2;
+      p.type = 'portal';
+      p.x = cx + Math.cos(a) * baseRadius;
+      p.y = cy + Math.sin(a) * baseRadius;
+      p.angle = a;
+      p.vx = 0; p.vy = 0;
+      p.maxLife = 1200;
+      p.life = 1200;
+      p.size = 2.5 + Math.random() * 2;
+      p.color = Math.random() < 0.5 ? COLORS.gold : COLORS.goldOrange;
+      p.wobbleSeed = Math.random() * Math.PI * 2;
+      p.wobble = baseRadius;
+      // store center via vx/vy hack: use custom fields
+      p.cx = cx; p.cy = cy;
+      p.spinSpeed = 0.06 + Math.random() * 0.04;
+      this.particles.push(p);
+    }
+  }
+
+  refreshPortalRing(cx, cy) {
+    // pull existing portal particles toward new center
+    for (const p of this.particles) {
+      if (p.type === 'portal' && p.life > 400) {
+        p.cx = cx; p.cy = cy;
+        p.life = Math.max(p.life, 1200);
+      }
+    }
+  }
+
+  fadePortalRing() {
+    for (const p of this.particles) {
+      if (p.type === 'portal' && p.life > 800) {
+        p.life = 800;
+      }
+    }
+  }
+
+  update(dt) {
+    for (let i = this.particles.length - 1; i >= 0; i--) {
+      const p = this.particles[i];
+      p.life -= dt;
+      if (p.life <= 0) {
+        p.active = false;
+        this.particles.splice(i, 1);
+        continue;
+      }
+      if (p.type === 'fist') {
+        p.tail.x = p.x; p.tail.y = p.y;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += p.gravity;
+      } else if (p.type === 'portal') {
+        p.angle += p.spinSpeed * (dt / 16);
+        const r = p.wobble + Math.sin(performance.now() * 0.005 + p.wobbleSeed) * 6;
+        p.x = p.cx + Math.cos(p.angle) * r;
+        p.y = p.cy + Math.sin(p.angle) * r;
+      }
+    }
+  }
+
+  draw(ctx, mirror) {
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    for (const p of this.particles) {
+      const t = p.life / p.maxLife;
+      const alpha = Math.max(0, Math.min(1, t));
+      const px = mirror(p.x);
+
+      if (p.type === 'fist') {
+        // tail streak
+        ctx.strokeStyle = p.color;
+        ctx.globalAlpha = alpha * 0.7;
+        ctx.lineWidth = p.size;
+        ctx.lineCap = 'round';
+        ctx.shadowBlur = 14;
+        ctx.shadowColor = p.color;
+        ctx.beginPath();
+        const dx = p.x - p.tail.x;
+        const dy = p.y - p.tail.y;
+        const len = Math.min(15, Math.sqrt(dx*dx + dy*dy) * 3);
+        const ang = Math.atan2(dy, dx);
+        const tx = mirror(p.x - Math.cos(ang) * len);
+        const ty = p.y - Math.sin(ang) * len;
+        ctx.moveTo(tx, ty);
+        ctx.lineTo(px, p.y);
+        ctx.stroke();
+
+        // head
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(px, p.y, p.size * 1.5, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (p.type === 'portal') {
+        ctx.globalAlpha = alpha;
+        ctx.shadowBlur = 18;
+        ctx.shadowColor = p.color;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(px, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    ctx.restore();
+  }
+}
+
+/* -------------------- Trail System (index finger) -------------------- */
+class TrailSystem {
+  constructor() {
+    this.trails = [[], []]; // up to 2 hands
+  }
+
+  push(handIndex, x, y, time) {
+    if (!this.trails[handIndex]) this.trails[handIndex] = [];
+    const arr = this.trails[handIndex];
+    const last = arr[arr.length - 1];
+    if (!last || (Math.hypot(last.x - x, last.y - y) > 1.5)) {
+      arr.push({ x, y, t: time });
+    }
+    // cap memory
+    if (arr.length > 200) arr.shift();
+  }
+
+  clearHand(handIndex) {
+    // let it fade naturally - do nothing
+  }
+
+  update(now) {
+    for (const arr of this.trails) {
+      while (arr.length && (now - arr[0].t) > 1000) arr.shift();
+    }
+  }
+
+  draw(ctx, mirror, fadeMul = 1) {
+    ctx.save();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.shadowColor = COLORS.goldOrange;
+    const now = performance.now();
+
+    for (const arr of this.trails) {
+      if (arr.length < 2) continue;
+      // Draw multiple passes for glow
+      for (let pass = 0; pass < 3; pass++) {
+        const widthScale = [2.4, 1.4, 0.8][pass];
+        const blur = [22, 14, 6][pass];
+        const colorPass = pass === 2 ? '#fff5d8' : (pass === 1 ? COLORS.gold : COLORS.goldOrange);
+        ctx.shadowBlur = blur;
+        ctx.shadowColor = COLORS.goldOrange;
+        ctx.strokeStyle = colorPass;
+
+        for (let i = 1; i < arr.length; i++) {
+          const a = arr[i - 1];
+          const b = arr[i];
+          const ageA = (now - a.t) / 1000;
+          const alpha = Math.max(0, 1 - ageA) * fadeMul;
+          if (alpha <= 0) continue;
+          const segWidth = (3 + (1 - ageA) * 3) * widthScale;
+          ctx.globalAlpha = alpha * (pass === 2 ? 0.9 : 0.7);
+          ctx.lineWidth = segWidth;
+
+          ctx.beginPath();
+          // bezier-smoothed: use quadratic to midpoint
+          const ax = mirror(a.x), ay = a.y;
+          const bx = mirror(b.x), by = b.y;
+          if (i > 1) {
+            const prev = arr[i - 2];
+            const px = mirror(prev.x), py = prev.y;
+            const cx = (px + ax) / 2, cy = (py + ay) / 2;
+            const ex = (ax + bx) / 2, ey = (ay + by) / 2;
+            ctx.moveTo(cx, cy);
+            ctx.quadraticCurveTo(ax, ay, ex, ey);
+          } else {
+            ctx.moveTo(ax, ay);
+            ctx.lineTo(bx, by);
+          }
+          ctx.stroke();
+        }
+      }
+    }
+    ctx.restore();
+  }
+}
+
+/* -------------------- Smoke System -------------------- */
+class SmokeSystem {
+  constructor() { this.particles = []; }
+
+  emit(x, y, count = 18) {
+    for (let i = 0; i < count; i++) {
+      const p = pool.acquire();
+      p.type = 'smoke';
+      p.x = x + (Math.random() - 0.5) * 16;
+      p.y = y + (Math.random() - 0.5) * 16;
+      p.vx = (Math.random() - 0.5) * 0.6;
+      p.vy = -0.6 - Math.random() * 0.8;
+      p.maxLife = 1200;
+      p.life = 1200;
+      p.startSize = 8;
+      p.endSize = 40;
+      p.size = 8;
+      p.wobbleSeed = Math.random() * Math.PI * 2;
+      p.color = Math.random() < 0.5 ? COLORS.cyanLight : '#FFFFFF';
+      this.particles.push(p);
+    }
+  }
+
+  update(dt) {
+    const now = performance.now();
+    for (let i = this.particles.length - 1; i >= 0; i--) {
+      const p = this.particles[i];
+      p.life -= dt;
+      if (p.life <= 0) {
+        p.active = false;
+        this.particles.splice(i, 1);
+        continue;
+      }
+      const t = 1 - p.life / p.maxLife;
+      p.size = p.startSize + (p.endSize - p.startSize) * t;
+      p.x += p.vx + Math.sin(now * 0.003 + p.wobbleSeed) * 0.5;
+      p.y += p.vy;
+      p.vy *= 0.995;
+    }
+  }
+
+  draw(ctx, mirror, fadeMul = 1) {
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    for (const p of this.particles) {
+      const t = p.life / p.maxLife;
+      const alpha = Math.max(0, t * 0.45) * fadeMul;
+      const px = mirror(p.x);
+      const grad = ctx.createRadialGradient(px, p.y, 0, px, p.y, p.size);
+      grad.addColorStop(0, `rgba(220, 250, 255, ${alpha})`);
+      grad.addColorStop(0.4, `rgba(125, 249, 255, ${alpha * 0.6})`);
+      grad.addColorStop(1, 'rgba(0, 191, 255, 0)');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(px, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+}
+
+/* -------------------- Mandala Shield -------------------- */
+class MandalaShield {
+  constructor() {
+    this.active = false;
+    this.opacity = 0;
+    this.x = 0; this.y = 0;
+    this.size = 180;
+    this.rotation = 0;
+    this.targetOpacity = 0;
+  }
+
+  setTarget(active, x, y, size) {
+    this.active = active;
+    this.targetOpacity = active ? 1 : 0;
+    if (active) {
+      this.x = x; this.y = y; this.size = size;
+    }
+  }
+
+  update(dt) {
+    this.rotation += dt * 0.0004;
+    const speed = dt / 220;
+    this.opacity += (this.targetOpacity - this.opacity) * Math.min(1, speed);
+  }
+
+  draw(ctx, mirror, fadeMul = 1) {
+    if (this.opacity < 0.02) return;
+    const cx = mirror(this.x);
+    const cy = this.y;
+    const pulse = 0.85 + 0.15 * Math.sin(performance.now() * 0.004);
+    const baseAlpha = this.opacity * pulse * fadeMul;
+    const r = this.size;
+
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.translate(cx, cy);
+    ctx.rotate(this.rotation);
+
+    // Outer ring
+    ctx.strokeStyle = COLORS.goldOrange;
+    ctx.shadowBlur = 24;
+    ctx.shadowColor = COLORS.goldOrange;
+    ctx.globalAlpha = baseAlpha * 0.9;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Inner ring
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 0.7, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Inner ring 2
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 0.35, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // 8-fold symmetry
+    const SYM = 8;
+    for (let i = 0; i < SYM; i++) {
+      ctx.save();
+      ctx.rotate((i / SYM) * Math.PI * 2);
+
+      // radial spoke
+      ctx.strokeStyle = COLORS.gold;
+      ctx.globalAlpha = baseAlpha * 0.85;
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(r, 0);
+      ctx.stroke();
+
+      // petal arc
+      ctx.beginPath();
+      ctx.arc(r * 0.55, 0, r * 0.22, Math.PI * 0.4, Math.PI * 1.6);
+      ctx.stroke();
+
+      // small triangle motif
+      ctx.beginPath();
+      ctx.moveTo(r * 0.85, 0);
+      ctx.lineTo(r * 0.95, r * 0.06);
+      ctx.lineTo(r * 0.95, -r * 0.06);
+      ctx.closePath();
+      ctx.stroke();
+
+      // outer arrow tick
+      ctx.strokeStyle = COLORS.goldOrange;
+      ctx.beginPath();
+      const ang = Math.PI * 2 / (SYM * 2);
+      ctx.moveTo(r, 0);
+      ctx.lineTo(r * 1.08, Math.sin(ang) * r * 0.08);
+      ctx.lineTo(r * 1.08, -Math.sin(ang) * r * 0.08);
+      ctx.closePath();
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    // Inscribed octagon
+    ctx.strokeStyle = COLORS.gold;
+    ctx.globalAlpha = baseAlpha * 0.7;
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    for (let i = 0; i <= SYM; i++) {
+      const a = (i / SYM) * Math.PI * 2;
+      const px = Math.cos(a) * r * 0.7;
+      const py = Math.sin(a) * r * 0.7;
+      if (i === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+
+    // inner star
+    ctx.beginPath();
+    for (let i = 0; i < SYM; i++) {
+      const a = (i / SYM) * Math.PI * 2;
+      const a2 = ((i + 0.5) / SYM) * Math.PI * 2;
+      ctx.lineTo(Math.cos(a) * r * 0.35, Math.sin(a) * r * 0.35);
+      ctx.lineTo(Math.cos(a2) * r * 0.18, Math.sin(a2) * r * 0.18);
+    }
+    ctx.closePath();
+    ctx.stroke();
+
+    // central glow
+    const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, r * 0.3);
+    grad.addColorStop(0, `rgba(255, 215, 0, ${baseAlpha * 0.45})`);
+    grad.addColorStop(1, 'rgba(255, 140, 0, 0)');
+    ctx.fillStyle = grad;
+    ctx.globalAlpha = 1;
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 0.3, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  }
+}
+
+/* -------------------- Hand Gesture Detection -------------------- */
+function isFingerExtended(landmarks, tip, pip, mcp, wrist) {
+  // Distance from wrist comparison: tip should be farther than pip
+  const dTip = Math.hypot(landmarks[tip].x - landmarks[wrist].x, landmarks[tip].y - landmarks[wrist].y);
+  const dPip = Math.hypot(landmarks[pip].x - landmarks[wrist].x, landmarks[pip].y - landmarks[wrist].y);
+  return dTip > dPip * 1.05;
+}
+function isThumbExtended(landmarks, hand) {
+  // Thumb tip distance from index MCP relative to thumb IP
+  const tip = landmarks[4], ip = landmarks[3], indexMcp = landmarks[5];
+  const dTip = Math.hypot(tip.x - indexMcp.x, tip.y - indexMcp.y);
+  const dIp = Math.hypot(ip.x - indexMcp.x, ip.y - indexMcp.y);
+  return dTip > dIp * 1.1;
+}
+
+function detectHandPose(landmarks) {
+  // returns { open: bool, fist: bool }
+  const indexExt = isFingerExtended(landmarks, 8, 6, 5, 0);
+  const middleExt = isFingerExtended(landmarks, 12, 10, 9, 0);
+  const ringExt = isFingerExtended(landmarks, 16, 14, 13, 0);
+  const pinkyExt = isFingerExtended(landmarks, 20, 18, 17, 0);
+  const thumbExt = isThumbExtended(landmarks);
+  const extCount = [indexExt, middleExt, ringExt, pinkyExt].filter(Boolean).length;
+  const open = extCount >= 4 && thumbExt;
+  const fist = extCount === 0 && !thumbExt;
+  return { open, fist, extCount };
+}
+
+function palmCenter(landmarks, w, h) {
+  // average of wrist (0), index mcp (5), pinky mcp (17), middle mcp (9)
+  const idx = [0, 5, 9, 13, 17];
+  let sx = 0, sy = 0;
+  for (const i of idx) { sx += landmarks[i].x; sy += landmarks[i].y; }
+  return { x: (sx / idx.length) * w, y: (sy / idx.length) * h };
+}
+
+function handSize(landmarks, w, h) {
+  // distance wrist to middle finger MCP
+  const a = landmarks[0], b = landmarks[9];
+  return Math.hypot((a.x - b.x) * w, (a.y - b.y) * h);
+}
+
+/* -------------------- Systems -------------------- */
+const trailSystem = new TrailSystem();
+const smokeSystem = new SmokeSystem();
+const particles = new ParticleSystem();
+const mandalas = [new MandalaShield(), new MandalaShield()];
+
+let currentLandmarks = []; // [{landmarks, handedness}, ...]
+let portalActive = false;
+let portalFadeStart = 0;
+let lastFistTriggerPerHand = [0, 0];
+let noHandFrames = 0;
+let lastFrame = performance.now();
+
+const MIRROR = (x) => W - x;
+
+/* -------------------- MediaPipe Setup -------------------- */
+let hands = null;
+let camera = null;
+
+async function startCamera() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' },
+      audio: false,
+    });
+    video.srcObject = stream;
+    await video.play();
+
+    permissionScreen.classList.add('hidden');
+    setTimeout(() => permissionScreen.style.display = 'none', 700);
+
+    hands = new Hands({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
+    });
+    hands.setOptions({
+      maxNumHands: 2,
+      modelComplexity: 1,
+      minDetectionConfidence: 0.6,
+      minTrackingConfidence: 0.5,
+    });
+    hands.onResults(onHandResults);
+
+    camera = new Camera(video, {
+      onFrame: async () => {
+        if (hands) await hands.send({ image: video });
+      },
+      width: 1280,
+      height: 720,
+    });
+    camera.start();
+
+    requestAnimationFrame(loop);
+  } catch (err) {
+    console.error('Camera error:', err);
+    alert('Could not access camera: ' + err.message);
+  }
+}
+
+function onHandResults(results) {
+  if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) {
+    currentLandmarks = [];
+    return;
+  }
+  currentLandmarks = results.multiHandLandmarks.map((lm, i) => ({
+    landmarks: lm,
+    handedness: results.multiHandedness ? results.multiHandedness[i].label : 'Right',
+  }));
+}
+
+/* -------------------- Main Loop -------------------- */
+function loop(now) {
+  const dt = Math.min(64, now - lastFrame);
+  lastFrame = now;
+
+  // starfield twinkle (cheap)
+  drawStars(now);
+
+  // clear fx canvas
+  ctx.clearRect(0, 0, W, H);
+
+  // Track hands existence for fadeMul
+  if (currentLandmarks.length === 0) {
+    noHandFrames++;
+  } else {
+    noHandFrames = 0;
+  }
+  // fade multiplier ramps down over 300ms after 3 missing frames
+  let fadeMul = 1;
+  if (noHandFrames > 3) {
+    const fadeStart = noHandFrames - 3;
+    fadeMul = Math.max(0, 1 - (fadeStart * (dt / 300)));
+    fadeMul = Math.max(0, 1 - ((noHandFrames - 3) / 18));
+  }
+
+  // Process hands
+  const indexTipsScreen = [];
+  let activeGesture = 'IDLE';
+  let portalDetectedThisFrame = false;
+
+  if (currentLandmarks.length > 0) {
+    for (let h = 0; h < currentLandmarks.length; h++) {
+      const lm = currentLandmarks[h].landmarks;
+
+      // Convert to screen coords (note: mediapipe gives normalized 0..1 of input image which is the
+      // un-mirrored video frame. Our canvas is unmirrored too; mirroring is applied at draw time.)
+      const indexTip = { x: lm[8].x * W, y: lm[8].y * H };
+      const wrist = { x: lm[0].x * W, y: lm[0].y * H };
+      const palm = palmCenter(lm, W, H);
+      const hSize = handSize(lm, W, H);
+
+      indexTipsScreen.push(indexTip);
+
+      // ---- Trail ----
+      trailSystem.push(h, indexTip.x, indexTip.y, now);
+
+      // ---- Smoke (always emit small amount per hand) ----
+      smokeSystem.emit(wrist.x, wrist.y, 8);
+      smokeSystem.emit(palm.x, palm.y, 10);
+
+      // ---- Pose detection ----
+      const pose = detectHandPose(lm);
+
+      if (pose.open) {
+        mandalas[h].setTarget(true, palm.x, palm.y, Math.max(120, hSize * 1.4));
+        if (activeGesture !== 'PORTAL FORMING') activeGesture = 'SHIELD RAISED';
+      } else {
+        mandalas[h].setTarget(false, palm.x, palm.y, hSize);
+      }
+
+      if (pose.fist) {
+        if (now - lastFistTriggerPerHand[h] > 600) {
+          particles.spawnFistExplosion(palm.x, palm.y);
+          lastFistTriggerPerHand[h] = now;
+        }
+        if (activeGesture === 'IDLE') activeGesture = 'CASTING';
+      }
+    }
+
+    // ---- Portal (two index fingertips close) ----
+    if (indexTipsScreen.length >= 2) {
+      const a = indexTipsScreen[0], b = indexTipsScreen[1];
+      const dist = Math.hypot(a.x - b.x, a.y - b.y);
+      if (dist < 80) {
+        portalDetectedThisFrame = true;
+        const cx = (a.x + b.x) / 2, cy = (a.y + b.y) / 2;
+        if (!portalActive) {
+          particles.spawnPortalRing(cx, cy);
+          portalActive = true;
+        } else {
+          particles.refreshPortalRing(cx, cy);
+        }
+        portalFadeStart = 0;
+        activeGesture = 'PORTAL FORMING';
+      }
+    }
+    if (portalActive && !portalDetectedThisFrame) {
+      if (!portalFadeStart) portalFadeStart = now;
+      if (now - portalFadeStart > 50) {
+        particles.fadePortalRing();
+        portalActive = false;
+      }
+    }
+  } else {
+    // no hands - clear mandalas
+    for (const m of mandalas) m.setTarget(false, m.x, m.y, m.size);
+    if (portalActive) {
+      particles.fadePortalRing();
+      portalActive = false;
+    }
+  }
+
+  // Update systems
+  trailSystem.update(now);
+  smokeSystem.update(dt);
+  particles.update(dt);
+  for (const m of mandalas) m.update(dt);
+
+  // Draw layered: smoke (bottom), trail, mandalas, particles (top)
+  smokeSystem.draw(ctx, MIRROR, fadeMul);
+  trailSystem.draw(ctx, MIRROR, fadeMul);
+  for (const m of mandalas) m.draw(ctx, MIRROR, fadeMul);
+  particles.draw(ctx, MIRROR);
+
+  // HUD
+  updateHUD(activeGesture, currentLandmarks.length);
+
+  requestAnimationFrame(loop);
+}
+
+function updateHUD(gesture, handCount) {
+  if (gestureLabel.textContent !== gesture) {
+    gestureLabel.textContent = gesture;
+  }
+  gestureLabel.classList.remove('idle', 'portal', 'shield', 'casting');
+  if (gesture === 'IDLE') gestureLabel.classList.add('idle');
+  else if (gesture === 'PORTAL FORMING') gestureLabel.classList.add('portal');
+  else if (gesture === 'SHIELD RAISED') gestureLabel.classList.add('shield');
+  else gestureLabel.classList.add('casting');
+  handCountEl.textContent = `${handCount} hand${handCount === 1 ? '' : 's'} detected`;
+}
+
+/* -------------------- Init -------------------- */
+resize();
+initStars();
+drawStars();
+
+allowBtn.addEventListener('click', () => {
+  startCamera();
+});
+
+// keep starfield alive on the permission screen too
+function ambientLoop(t) {
+  if (permissionScreen && !permissionScreen.classList.contains('hidden')) {
+    drawStars(t);
+    requestAnimationFrame(ambientLoop);
+  }
+}
+requestAnimationFrame(ambientLoop);
+
+</script>
+</body>
+</html>
